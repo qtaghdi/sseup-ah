@@ -1,55 +1,33 @@
 /**
- * 중국어 문자를 제거하는 유틸리티
- * 모든 CJK 한자를 제거하는 엄격한 모드
+ * AI 응답 정제 유틸리티
+ * 한글, 영어, 숫자, 기본 문장부호만 허용
  */
 
-// CJK 한자 범위 (모든 한자)
-const CJK_CHARACTERS = /[\u4e00-\u9fff\u3400-\u4dbf]/g;
+// 허용할 문자: 한글, 영어, 숫자, 기본 문장부호, 마크다운 문법
+const ALLOWED_CHARS = /[가-힣a-zA-Z0-9\s.,!?:;'"()\[\]{}<>@#$%^&*+=\-_/\\|`~\n\r]/g;
 
 /**
- * 텍스트에서 모든 한자와 중국어 문장부호를 제거
+ * 한글, 영어, 숫자, 기본 문장부호만 남기고 모두 제거
  */
-export const removeChinese = (text: string): string => {
-	let result = text;
-
-	// 1. 모든 CJK 한자 제거
-	result = result.replace(CJK_CHARACTERS, '');
-
-	// 2. 중국어 문장부호를 한국어/영어 문장부호로 변환
-	result = result
-		.replace(/，/g, ',')
-		.replace(/。/g, '.')
-		.replace(/！/g, '!')
-		.replace(/？/g, '?')
-		.replace(/、/g, ',')
-		.replace(/；/g, ';')
-		.replace(/：/g, ':')
-		.replace(/"/g, '"')
-		.replace(/"/g, '"')
-		.replace(/'/g, "'")
-		.replace(/'/g, "'")
-		.replace(/（/g, '(')
-		.replace(/）/g, ')')
-		.replace(/【/g, '[')
-		.replace(/】/g, ']')
-		.replace(/《/g, '<')
-		.replace(/》/g, '>');
-
-	return result;
+export const sanitizeToKoreanEnglish = (text: string): string => {
+	// 허용된 문자만 추출
+	const matches = text.match(ALLOWED_CHARS);
+	return matches ? matches.join('') : '';
 };
 
 /**
- * AI 응답 정제 - 중국어 제거 + 마크다운 포맷 정리
+ * AI 응답 정제 - 허용 문자만 남기고 마크다운 포맷 정리
  */
 export const sanitizeAIResponse = (text: string): string => {
-	let result = removeChinese(text);
+	// 1. 한글, 영어, 숫자, 기본 문장부호만 남기기
+	let result = sanitizeToKoreanEnglish(text);
 
-	// 1. 과도한 별표/헤딩 정리
+	// 2. 과도한 별표/헤딩 정리
 	result = result
 		.replace(/\*{3,}/g, '')
 		.replace(/#{4,}/g, '###');
 
-	// 2. 각 줄 단위로 처리 (줄바꿈 보존)
+	// 3. 각 줄 단위로 처리 (줄바꿈 보존)
 	const lines = result.split('\n');
 	const processedLines: string[] = [];
 
@@ -70,7 +48,7 @@ export const sanitizeAIResponse = (text: string): string => {
 		processedLines.push(line);
 	}
 
-	// 3. 연속 빈 줄은 최대 2개로 제한
+	// 4. 연속 빈 줄은 최대 2개로 제한
 	result = processedLines.join('\n').replace(/\n{4,}/g, '\n\n\n');
 
 	return result.trim();
