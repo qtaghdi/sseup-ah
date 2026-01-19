@@ -45,11 +45,28 @@ export const sanitizeAIResponse = (text: string): string => {
 			}
 		}
 
+		// 리스트 항목(-) 앞에 빈 줄이 없으면 추가 (헤딩 바로 다음은 제외)
+		if (line.startsWith('- ') && processedLines.length > 0) {
+			const lastLine = processedLines[processedLines.length - 1];
+			// 이전 줄이 헤딩이 아니고, 빈 줄도 아니고, 리스트도 아닌 경우 빈 줄 추가
+			if (lastLine !== '' && !lastLine.startsWith('## ') && !lastLine.startsWith('- ')) {
+				processedLines.push('');
+			}
+		}
+
+		// 일반 텍스트가 리스트 다음에 오면 빈 줄 추가
+		if (line !== '' && !line.startsWith('- ') && !line.startsWith('## ') && processedLines.length > 0) {
+			const lastLine = processedLines[processedLines.length - 1];
+			if (lastLine.startsWith('- ')) {
+				processedLines.push('');
+			}
+		}
+
 		processedLines.push(line);
 	}
 
-	// 4. 연속 빈 줄은 최대 2개로 제한
-	result = processedLines.join('\n').replace(/\n{4,}/g, '\n\n\n');
+	// 4. 연속 빈 줄은 최대 1개로 제한 (더 깔끔하게)
+	result = processedLines.join('\n').replace(/\n{3,}/g, '\n\n');
 
 	return result.trim();
 };
