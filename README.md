@@ -80,4 +80,4 @@ Vercel에서 바로 배포 가능합니다:
 
 ## 라이선스
 
-MIT
+This project is open source and available under the [MIT License](LICENSE.md).
