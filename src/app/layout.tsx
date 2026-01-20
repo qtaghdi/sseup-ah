@@ -3,6 +3,7 @@ import Providers from "src/widgets/layouts/provider";
 import "@bigtablet/design-system/style.css";
 import "../shared/styles/token.scss";
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
     title: "씁.. 아…",
@@ -21,6 +22,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <body className="font-sans antialiased">
         <div id="modal" />
         <Providers>{children}</Providers>
+        <Analytics />
         </body>
         </html>
     );
